@@ -1,0 +1,62 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pynnger"
+version = "0.1.0"
+description = "Plan-first, token-frugal Python project generator with a zero-token static reviewer"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "pydantic>=2.6,<3",
+  "ruff>=0.6",
+]
+
+[project.optional-dependencies]
+anthropic = ["anthropic>=0.40"]
+openai = ["httpx>=0.27"]
+server = ["fastapi>=0.110", "uvicorn>=0.29", "httpx>=0.27"]
+typecheck = ["mypy>=1.10"]
+# The training scripts were written against these versions' APIs (read from their source).
+train = ["torch", "transformers>=5.20", "datasets", "peft>=0.21", "trl>=1.16", "accelerate"]
+dev = [
+  "pytest>=8",
+  "mypy>=1.10",
+  "anthropic>=0.40",
+  "fastapi>=0.110",
+  "uvicorn>=0.29",
+  "httpx>=0.27",
+]
+
+[project.scripts]
+pynnger = "pynnger.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pynnger"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = ["eval/reference", "eval/tasks"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "RUF"]
+ignore = ["RUF012"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E501"]  # tests embed source snippets as strings
+"src/pynnger/demo.py" = ["E501"]
+"src/pynnger/prompts.py" = ["E501"]  # prompt text is wrapped for the model, not the editor
+"src/pynnger/cli.py" = ["E501"]  # argparse help strings
+"src/pynnger/context/selector.py" = ["E501"]  # stop-word list
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+files = ["src/pynnger"]
+ignore_missing_imports = true
